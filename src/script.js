@@ -1,125 +1,221 @@
 import './style.css'
 import * as THREE from 'three'
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js'
+import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls.js'
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import * as dat from 'lil-gui'
 
 /**
- * Base
+ * BASE
  */
-// Debug
-const gui = new dat.GUI()
 
-// Canvas
-const canvas = document.querySelector('canvas.webgl')
+//DEBUG PANEL
+const gui = new dat.GUI();
 
-// Scene
-const scene = new THREE.Scene()
+//CANVAS
+const canvas = document.querySelector('canvas.webgl');
 
-/**
- * Textures
- */
-const textureLoader = new THREE.TextureLoader()
+//SCENE
+const scene = new THREE.Scene();
 
-/**
- * House
- */
-// Temporary sphere
-const sphere = new THREE.Mesh(
-    new THREE.SphereGeometry(1, 32, 32),
-    new THREE.MeshStandardMaterial({ roughness: 0.7 })
-)
-sphere.position.y = 1
-scene.add(sphere)
+// MODAL LOADER
+const loader = new GLTFLoader();
+console.log(loader)
+const lampStyle=[
+    {
+        position:{
+            x:18,
+            y:-2,
+            z:18,
+        },
+        scale:{
+            x:0.125,
+            y:0.125,
+            z:0.125,
+        }
+    },
+    {
+        position:{
+            x:-20,
+            y:-2,
+            z:18,
+        },
+        scale:{
+            x:0.125,
+            y:0.125,
+            z:0.125,
+        }
+    },
+    {
+        position:{
+            x:18.5,
+            y:-2,
+            z:-21,
+        },
+        scale:{
+            x:0.125,
+            y:0.125,
+            z:0.125,
+        }
+    },
+    {
+        position:{
+            x:-20,
+            y:-2,
+            z:-20,
+        },
+        scale:{
+            x:0.125,
+            y:0.125,
+            z:0.125,
+        }
+    }
+]
+loader.load('/lamp/scene.gltf',(gltf)=>{
+    const lamp = gltf.scene;
+    for(let i=0; i<4; i++){
+        const clone = lamp.clone();
+        clone.position.set(lampStyle[i].position.x,lampStyle[i].position.y, lampStyle[i].position.z)
+        clone.scale.set(lampStyle[i].scale.x,lampStyle[i].scale.y, lampStyle[i].scale.z)
+        scene.add(clone)
+        console.log(clone)
+    }
+}, undefined, (err)=>{
+    console.log(err)
+})
 
-// Floor
+//TEXTURE LOADER
+const textureLoader = new THREE.TextureLoader();
+const cubeTextureLoader = new THREE.CubeTextureLoader();
+const environmentMapTexture = cubeTextureLoader.load([
+    '/textures/environment/px.png',
+    '/textures/environment/nx.png',
+    '/textures/environment/py.png',
+    '/textures/environment/ny.png',
+    '/textures/environment/pz.png',
+    '/textures/environment/nz.png',
+])
+scene.background = environmentMapTexture;
+
+const blockTexture = textureLoader.load('/textures/block/5.png')
+blockTexture.generateMipmaps = false
+blockTexture.repeat.x=1
+blockTexture.repeat.y=1
+blockTexture.wrapS = THREE.RepeatWrapping
+blockTexture.wrapT = THREE.RepeatWrapping
+blockTexture.magFilter = THREE.NearestFilter
+blockTexture.minFilter = THREE.NearestFilter
+
+const grassTexture = textureLoader.load('/textures/grass/grass.png');
+grassTexture.generateMipmaps = false
+grassTexture.repeat.x=2
+grassTexture.repeat.y=2
+grassTexture.wrapS = THREE.RepeatWrapping
+grassTexture.wrapT = THREE.RepeatWrapping
+grassTexture.magFilter = THREE.NearestFilter
+grassTexture.minFilter = THREE.NearestFilter
+
+// blockTexture.wrapS = THREE.RepeatWrapping
+grassTexture.repeat.set(20, 20);
+
+//Plane
+
 const floor = new THREE.Mesh(
-    new THREE.PlaneGeometry(20, 20),
-    new THREE.MeshStandardMaterial({ color: '#a9c388' })
+    new THREE.BoxGeometry(40,0.5,40),
+    new THREE.MeshStandardMaterial({map:grassTexture, side: THREE.BackSide})
 )
-floor.rotation.x = - Math.PI * 0.5
-floor.position.y = 0
+floor.geometry.center()
+floor.rotation.x = Math.PI  
+floor.position.y = -2
 scene.add(floor)
 
-/**
- * Lights
- */
-// Ambient light
-const ambientLight = new THREE.AmbientLight('#ffffff', 0.5)
-gui.add(ambientLight, 'intensity').min(0).max(1).step(0.001)
+//BOX 
+const brick = new THREE.Mesh(
+    new THREE.BoxGeometry(2,2,2),
+    new THREE.MeshStandardMaterial({color:'#0ff'})
+)
+scene.add(brick)
+
+// LIGHTS
+const ambientLight = new THREE.AmbientLight(
+    '#fff',
+    0.5
+)
 scene.add(ambientLight)
 
-// Directional light
-const moonLight = new THREE.DirectionalLight('#ffffff', 0.5)
-moonLight.position.set(4, 5, - 2)
-gui.add(moonLight, 'intensity').min(0).max(1).step(0.001)
-gui.add(moonLight.position, 'x').min(- 5).max(5).step(0.001)
-gui.add(moonLight.position, 'y').min(- 5).max(5).step(0.001)
-gui.add(moonLight.position, 'z').min(- 5).max(5).step(0.001)
-scene.add(moonLight)
 
-/**
- * Sizes
- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// SIZES
 const sizes = {
     width: window.innerWidth,
     height: window.innerHeight
 }
 
-window.addEventListener('resize', () =>
-{
-    // Update sizes
+// RESIZE EVENT
+window.addEventListener('resize', ()=>{
+    
+    //update sizes
     sizes.width = window.innerWidth
     sizes.height = window.innerHeight
 
     // Update camera
     camera.aspect = sizes.width / sizes.height
     camera.updateProjectionMatrix()
-
+ 
     // Update renderer
     renderer.setSize(sizes.width, sizes.height)
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+
 })
 
-/**
- * Camera
- */
-// Base camera
-const camera = new THREE.PerspectiveCamera(75, sizes.width / sizes.height, 0.1, 100)
-camera.position.x = 4
-camera.position.y = 2
+// CAMERA
+const camera = new THREE.PerspectiveCamera(75, sizes.width/sizes.height, 0.1, 100)
+camera.position.x = 5
+camera.position.y = 8
 camera.position.z = 5
 scene.add(camera)
 
-// Controls
+//CONTROLS
 const controls = new OrbitControls(camera, canvas)
 controls.enableDamping = true
+// controls.maxPolarAngle = Math.PI * .5;
+controls.maxDistance = 15
+// controls.minDistance = 5
 
-/**
- * Renderer
- */
 const renderer = new THREE.WebGLRenderer({
-    canvas: canvas
+    canvas:canvas
 })
+
 renderer.setSize(sizes.width, sizes.height)
 renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
 
-/**
- * Animate
- */
+// ANIMATE
 const clock = new THREE.Clock()
-
-const tick = () =>
-{
+const tick = ()=>{
     const elapsedTime = clock.getElapsedTime()
 
-    // Update controls
+    //update controls
     controls.update()
 
-    // Render
+    //render
     renderer.render(scene, camera)
 
-    // Call tick again on the next frame
+    //call tick again on the next frame
     window.requestAnimationFrame(tick)
 }
-
 tick()
