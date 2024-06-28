@@ -42,13 +42,14 @@ function cloneMeshes(count, model, instructions) {
  */
 
 //DEBUG PANEL
-const gui = new dat.GUI();
+// const gui = new dat.GUI();
 
 //CANVAS
 const canvas = document.querySelector("canvas.webgl");
 
 //SCENE
 const scene = new THREE.Scene();
+
 
 // MODAL LOADER
 const loader = new GLTFLoader();
@@ -127,6 +128,8 @@ const redLampPositions = [
     {position: {x:0, y:2.2, z:-2.5,}, scale:{x:0.009, y:0.009, z:0.009}},
     {position: {x:0, y:2.2, z:2.5,}, scale:{x:0.009, y:0.009, z:0.009}}
 ]
+
+//red lamp
 loader.load(
     '/redStone_lamp/scene.gltf', (gltf)=>{
         const redLamp = gltf.scene
@@ -135,6 +138,7 @@ loader.load(
     }
 )
 
+//white lamp
 loader.load(
   "/lamp/scene.gltf",
   (gltf) => {
@@ -147,6 +151,106 @@ loader.load(
     console.log(err);
   }
 );
+// y:-1.471,
+// y: -1.864,
+
+//tree
+loader.load(
+    '/tree/scene.gltf',
+    (gltf)=>{
+        const tree = gltf.scene;
+        tree.position.y = 0
+        // gui.add(tree.position, 'y').min(-3).max(5).step(0.001).name('tree')
+
+        // scene.add(tree)
+        for( let i = 0; i < 100 ; i++){
+            const clone = tree.clone(true);
+            const angel = Math.random() * (Math.PI * 3)
+            const radius = 10 + Math.random() * 10
+            const x = Math.sin(angel) * radius
+            const z = Math.cos(angel) * radius
+            if(i%2==0){
+                clone.position.set(
+                    x,
+                    -3.2,
+                    z
+                )
+                clone.scale.set(
+                    2,2,2
+                )
+            }else{
+                clone.position.set(
+                    x,
+                    -2.5,
+                    z
+                )
+            }
+            scene.add(clone)
+        }
+    }
+)
+
+loader.load('/fence/scene.gltf',(gltf)=>{
+    const fence = gltf.scene;
+    fence.scale.set(0.45,0.45,0.45)
+//   new THREE.BoxGeometry(40, 0.5, 40),
+    const fenceGroupOne = new THREE.Group()
+    scene.add(fenceGroupOne)
+    for(let i=0; i < 40 / 0.75; i++){
+        const clone = fence.clone(true)
+        clone.scale.set(0.75,0.75,0.75)
+        clone.rotation.y = Math.PI * 0.5
+        clone.position.set(20, -2, ( i * 0.75))
+        console.log(i*0.75)
+        fenceGroupOne.add(clone)
+    }
+    fenceGroupOne.position.z = -20.25
+
+    const fenceGroupFour = new THREE.Group()
+    scene.add(fenceGroupFour)
+    for(let i=0; i < 40 / 0.75; i++){
+        const clone = fence.clone(true)
+        clone.scale.set(0.75,0.75,0.75)
+        clone.rotation.y = Math.PI * 0.5
+        clone.position.set(-20, -2, -( i * 0.75))
+        console.log(i*0.75)
+        fenceGroupFour.add(clone)
+    }
+    fenceGroupFour.position.z = 20.25
+
+
+    const fenceGroupTwo = new THREE.Group()
+    scene.add(fenceGroupTwo)
+    for(let i=0; i < 40 / 0.75; i++){
+        const clone = fence.clone(true)
+        clone.scale.set(0.75,0.75,0.75)
+        clone.rotation.y = Math.PI 
+        clone.position.set(( i * 0.75), -2, 20)
+        console.log(i*0.75)
+        fenceGroupTwo.add(clone)
+    }
+    fenceGroupTwo.position.x = -20
+    
+    const fenceGroupThree = new THREE.Group()
+    scene.add(fenceGroupThree)
+    for(let i=0; i < 40 / 0.75 - 1; i++){
+        const clone = fence.clone(true)
+        clone.scale.set(0.75,0.75,0.75)
+        clone.rotation.y = Math.PI 
+        clone.position.set(-( i * 0.75), -2, -20)
+        console.log(i*0.75)
+        fenceGroupThree.add(clone)
+    }
+    fenceGroupThree.position.x = 20
+
+
+    
+
+
+    // gui.add(fenceGroup.position, 'z').min(-20).max(10).step(1)
+})
+
+//player
 
 //TEXTURE LOADER
 const textureLoader = new THREE.TextureLoader();
@@ -341,9 +445,9 @@ scene.add(camera);
 //CONTROLS
 const controls = new OrbitControls(camera, canvas);
 controls.enableDamping = true;
-// controls.maxPolarAngle = Math.PI * .5;
-controls.maxDistance = 15;
-// controls.minDistance = 5
+controls.maxPolarAngle = Math.PI * .5;
+controls.maxDistance = 20;
+controls.minDistance = 5
 
 const renderer = new THREE.WebGLRenderer({
   canvas: canvas,
