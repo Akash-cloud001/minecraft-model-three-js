@@ -114,8 +114,26 @@ const wallPosition = [
     rotation: { x: 0, y: Math.PI * 0.5, z: 0 },
   },
 ];
+//   new THREE.BoxGeometry(0.5, 4, 5),
 
-
+const redLampPositions = [
+    {position: {x:0, y:2.2, z:0,}, scale:{x:0.009, y:0.009, z:0.009}},
+    {position: {x:-2, y:2.2, z:2.5,}, scale:{x:0.009, y:0.009, z:0.009}},
+    {position: {x:-2, y:2.2, z:-2.5,}, scale:{x:0.009, y:0.009, z:0.009}},
+    {position: {x:2, y:2.2, z:-2.5,}, scale:{x:0.009, y:0.009, z:0.009}},
+    {position: {x:2, y:2.2, z:2.5,}, scale:{x:0.009, y:0.009, z:0.009}},
+    {position: {x:-2, y:2.2, z:0,}, scale:{x:0.009, y:0.009, z:0.009}},
+    {position: {x:2, y:2.2, z:0,}, scale:{x:0.009, y:0.009, z:0.009}},
+    {position: {x:0, y:2.2, z:-2.5,}, scale:{x:0.009, y:0.009, z:0.009}},
+    {position: {x:0, y:2.2, z:2.5,}, scale:{x:0.009, y:0.009, z:0.009}}
+]
+loader.load(
+    '/redStone_lamp/scene.gltf', (gltf)=>{
+        const redLamp = gltf.scene
+        const redLampGroup = cloneMeshes(redLampPositions.length, redLamp, redLampPositions)
+        scene.add(redLampGroup)
+    }
+)
 
 loader.load(
   "/lamp/scene.gltf",
@@ -152,6 +170,27 @@ blockTexture.wrapT = THREE.RepeatWrapping;
 blockTexture.magFilter = THREE.NearestFilter;
 blockTexture.minFilter = THREE.NearestFilter;
 blockTexture.repeat.set(5, 5);
+
+const leftHouseTexture = textureLoader.load("/textures/block/9.png");
+leftHouseTexture.generateMipmaps = false;
+leftHouseTexture.repeat.x = 0.25;
+leftHouseTexture.repeat.y = 0.25;
+leftHouseTexture.wrapS = THREE.RepeatWrapping;
+leftHouseTexture.wrapT = THREE.RepeatWrapping;
+leftHouseTexture.magFilter = THREE.NearestFilter;
+leftHouseTexture.minFilter = THREE.NearestFilter;
+leftHouseTexture.repeat.set(3,4);
+
+const rightHouseTexture = textureLoader.load("/textures/block/10.png");
+rightHouseTexture.generateMipmaps = false;
+rightHouseTexture.repeat.x = 0.25;
+rightHouseTexture.repeat.y = 0.25;
+rightHouseTexture.wrapS = THREE.RepeatWrapping;
+rightHouseTexture.wrapT = THREE.RepeatWrapping;
+rightHouseTexture.magFilter = THREE.NearestFilter;
+rightHouseTexture.minFilter = THREE.NearestFilter;
+rightHouseTexture.repeat.set(3,4);
+
 
 const grassTexture = textureLoader.load("/textures/grass/grass.png");
 grassTexture.generateMipmaps = false;
@@ -236,10 +275,29 @@ const leftHouse = houseGroup.clone(true);
 const rightHouse = houseGroup.clone(true);
 leftHouse.position.x = -3.737;
 leftHouse.position.y = -0.474;
+// Change the texture of the cloned group's meshes
 leftHouse.scale.set(0.5, 0.75, 1);
 rightHouse.position.x = 3.737;
 rightHouse.position.y = -0.474;
 rightHouse.scale.set(0.5, 0.75, 1);
+leftHouse.traverse((child) => {
+    if (child.isMesh) {
+        child.material = child.material.clone(); // Clone the material to avoid sharing the original material
+        if (child.geometry.type === 'BoxGeometry') {
+            // Change texture of specific meshes (e.g., only box meshes)
+            child.material.map = leftHouseTexture;
+        } 
+    }
+});
+rightHouse.traverse((child) => {
+    if (child.isMesh) {
+        child.material = child.material.clone(); // Clone the material to avoid sharing the original material
+        if (child.geometry.type === 'BoxGeometry') {
+            // Change texture of specific meshes (e.g., only box meshes)
+            child.material.map = rightHouseTexture;
+        } 
+    }
+});
 scene.add(leftHouse, rightHouse);
 // gui.add(rightHouse.position, 'y').min(-1).max(4).step(0.001)
 // gui.add(rightHouse.position, 'x').min(0).max(5).step(0.001)
